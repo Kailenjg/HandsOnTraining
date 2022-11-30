@@ -1,9 +1,5 @@
 variable "Project.Database.Name" {
     value "Trident" {}
-
-    value "" {
-        description = ""
-    }
 }
 
 variable "ConnectionStrings:Database" {
@@ -24,6 +20,22 @@ variable "Project.Database.Server.Name" {
     }
 
     value "Trident_Staging" {
+        description = ""
+    }
+}
+
+variable "Project.Database.User.Password" {
+    value "Trident_User_Dev01!" {}
+
+    value "Trident_User_Prod01!" {
+        description = ""
+    }
+
+    value "Trident_User_QA01!" {
+        description = ""
+    }
+
+    value "Trident_User_Staging01!" {
         description = ""
     }
 }
