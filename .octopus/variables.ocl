@@ -12,4 +12,8 @@ variable "Project.Database.Server.Name" {
     value "Trident_Dev" {
         description = ""
     }
+
+    value "Trident_Prod" {
+        description = ""
+    }
 }
