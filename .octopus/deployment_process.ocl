@@ -1,14 +1,14 @@
-step "deploy-trident-web" {
-    condition = "Always"
-    name = "Deploy Trident Wesbite"
+step "deploy-a-package" {
+    name = "Deploy Trident Website"
     properties = {
-        Octopus.Action.TargetRoles = "trident-web"
+        Octopus.Action.MaxParallelism = "1"
+        Octopus.Action.TargetRoles = "Trident-web"
     }
 
     action "remove-from-load-balancer" {
         action_type = "Octopus.Script"
         environments = ["staging", "production"]
-        name = "Remove from Load Balancer"
+        name = "Remove from load balancer"
         properties = {
             Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptBody = <<-EOT
@@ -22,14 +22,16 @@ step "deploy-trident-web" {
         worker_pool = "default-worker-pool-1"
     }
 
-    action "deploy-trident-web" {
+    action "deploy-a-package" {
         action_type = "Octopus.TentaclePackage"
-        name = "Deploy Trident.web"
+        name = "Deploy a Package"
         properties = {
-            Octopus.Action.EnabledFeatures = "Octopus.Features.JsonConfigurationVariables"
+            Octopus.Action.EnabledFeatures = "Octopus.Features.JsonConfigurationVariables,Octopus.Features.ConfigurationVariables,Octopus.Features.ConfigurationTransforms"
+            Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "False"
+            Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "False"
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "octopus-server-built-in"
-            Octopus.Action.Package.JsonConfigurationVariablesTargets = "appsettings.json"
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = "appSettings.json"
             Octopus.Action.Package.PackageId = "Trident.Web"
         }
         worker_pool_variable = ""
@@ -47,7 +49,7 @@ step "deploy-trident-web" {
     action "remove-from-load-balancer-clone-1" {
         action_type = "Octopus.Script"
         environments = ["staging", "production"]
-        name = "Add to Load Balancer"
+        name = "Add to load balancer"
         properties = {
             Octopus.Action.RunOnServer = "true"
             Octopus.Action.Script.ScriptBody = <<-EOT
@@ -64,15 +66,37 @@ step "deploy-trident-web" {
 
 step "notify-developers-of-status" {
     condition = "Always"
-    name = "Notify developers of Status"
+    name = "Notify Developers of Status"
 
     action {
         action_type = "Octopus.Email"
+        is_required = true
         properties = {
             Octopus.Action.Email.Body = "#{Notification.Body.Text}"
             Octopus.Action.Email.Subject = "#{Notification.Subject.Text}"
             Octopus.Action.Email.ToTeamIds = "trident-notifications"
         }
         worker_pool_variable = ""
+    }
+}
+
+step "send-slack-message-on-failure" {
+    condition = "Failure"
+    name = "Send Slack message on failure"
+
+    action {
+        properties = {
+            Octopus.Action.RunOnServer = "true"
+            Octopus.Action.Template.Id = "ActionTemplates-1"
+            Octopus.Action.Template.Version = "14"
+            ssn_Channel = "trident-deployment-notifications"
+            ssn_Color = "danger"
+            ssn_HookUrl = "#{Notification.Slack.Webhook.Url}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Body.Text}"
+            ssn_Title = "#{Notification.Subject.Text}"
+            ssn_Username = "Trident Project in Octopus Deploy"
+        }
+        worker_pool = "default-worker-pool-1"
     }
 }
