@@ -14,6 +14,7 @@ step "create-trident-database" {
             Run.Runbook.Environment.Name = "#{Octopus.Environment.Name}"
             Run.Runbook.Machines = "N/A"
             Run.Runbook.ManualIntervention.EnvironmentToUse = "#{Octopus.Environment.Name}"
+            Run.Runbook.Name = "Create Trident Database2"
             Run.Runbook.Project.Name = "Trident"
             Run.Runbook.Space.Name = "#{Octopus.Space.Name}"
             Run.Runbook.UsePublishedSnapShot = "True"
